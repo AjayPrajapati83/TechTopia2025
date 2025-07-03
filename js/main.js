@@ -1,14 +1,74 @@
 document.addEventListener('DOMContentLoaded', function() {
     // Mobile menu toggle
-    const menuToggle = document.querySelector('.menu-toggle');
-    const nav = document.querySelector('nav ul');
+    const hamburger = document.querySelector('.hamburger');
+    const navLinks = document.querySelector('.nav-links');
+    const navItems = document.querySelectorAll('.nav-links a');
+    const body = document.body;
     
-    if (menuToggle) {
-        menuToggle.addEventListener('click', function() {
-            nav.classList.toggle('active');
+    // Toggle mobile menu
+    if (hamburger) {
+        hamburger.addEventListener('click', function() {
             this.classList.toggle('active');
+            navLinks.classList.toggle('active');
+            body.classList.toggle('no-scroll');
+            
+            // Toggle aria-expanded for accessibility
+            const expanded = this.getAttribute('aria-expanded') === 'true' || false;
+            this.setAttribute('aria-expanded', !expanded);
+            navLinks.setAttribute('aria-hidden', expanded);
         });
     }
+    
+    // Close mobile menu when clicking on a nav link
+    navItems.forEach(link => {
+        link.addEventListener('click', function() {
+            if (window.innerWidth <= 768) {
+                hamburger.classList.remove('active');
+                navLinks.classList.remove('active');
+                body.classList.remove('no-scroll');
+                
+                // Update ARIA attributes
+                hamburger.setAttribute('aria-expanded', 'false');
+                navLinks.setAttribute('aria-hidden', 'true');
+            }
+        });
+    });
+    
+    // Close menu when clicking outside
+    document.addEventListener('click', function(e) {
+        if (window.innerWidth <= 768 && 
+            !e.target.closest('.nav-links') && 
+            !e.target.closest('.hamburger') &&
+            navLinks.classList.contains('active')) {
+            
+            hamburger.classList.remove('active');
+            navLinks.classList.remove('active');
+            body.classList.remove('no-scroll');
+            
+            // Update ARIA attributes
+            hamburger.setAttribute('aria-expanded', 'false');
+            navLinks.setAttribute('aria-hidden', 'true');
+        }
+    });
+    
+    // Close menu on window resize if it becomes desktop view
+    let resizeTimer;
+    window.addEventListener('resize', function() {
+        clearTimeout(resizeTimer);
+        resizeTimer = setTimeout(function() {
+            if (window.innerWidth > 768) {
+                hamburger.classList.remove('active');
+                navLinks.classList.remove('active');
+                body.classList.remove('no-scroll');
+                
+                // Update ARIA attributes
+                if (hamburger) {
+                    hamburger.setAttribute('aria-expanded', 'false');
+                    navLinks.setAttribute('aria-hidden', 'true');
+                }
+            }
+        }, 250);
+    });
 
     // Smooth scrolling for anchor links
     document.querySelectorAll('a[href^="#"]').forEach(anchor => {
